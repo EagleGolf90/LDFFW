@@ -1,0 +1,193 @@
+{
+  "quarterbacks": [
+    {
+      "id": "1",
+      "description": "Every 20 yards passing",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T18:24:01.429Z",
+      "updatedAt": "2025-12-21T22:47:04.206Z"
+    },
+    {
+      "id": "2",
+      "description": "Each completion",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    },
+    {
+      "id": "3",
+      "description": "Every rushing & reception attempt",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    },
+    {
+      "id": "4",
+      "description": "Every 10 yards rushing & reception",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    },
+    {
+      "id": "5",
+      "description": "Per TD (Pass, Rush & Reception)",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    },
+    {
+      "id": "6",
+      "description": "Bonus points per 10 yards to TD (Pass, Rush & Rec)",
+      "points": 2,
+      "type": "bonus",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    },
+    {
+      "id": "7",
+      "description": "Intercept/Fumble",
+      "points": -2,
+      "type": "negative",
+      "createdAt": "2025-12-21T18:24:01.429Z"
+    }
+  ],
+  "runningBacks": [
+    {
+      "id": "1",
+      "description": "Per carry",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "description": "Every 10 yards rushing",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "description": "Per catch",
+      "points": 2,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "description": "Every 20 yards reception",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "description": "Touchdown",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "6",
+      "description": "Bonus points per 10 yards to TD",
+      "points": 2,
+      "type": "bonus",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "7",
+      "description": "Every 20 yards passing",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "8",
+      "description": "Each completion",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    }
+  ],
+  "kickers": [
+    {
+      "id": "1",
+      "description": "Per extra point",
+      "points": 1,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "description": "XP Kick missed",
+      "points": -1,
+      "type": "negative",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "description": "Field Goal",
+      "points": 3,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "description": "Failed Field Goal",
+      "points": -3,
+      "type": "negative",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "description": "TD (Pass, Rush or Catch)",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "6",
+      "description": "Bonus per 10 yards to TD",
+      "points": 2,
+      "type": "bonus",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    }
+  ],
+  "defense": [
+    {
+      "id": "1",
+      "description": "Defense TD & Special Teams TD",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "description": "Bonus per 10 yards to TD",
+      "points": 2,
+      "type": "bonus",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "description": "Per intercept/sack/fumble recovery",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "4",
+      "description": "Safety",
+      "points": 8,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "description": "Block FG/Missed FG",
+      "points": 6,
+      "type": "normal",
+      "createdAt": "2025-12-21T00:00:00.000Z"
+    }
+  ]
+}

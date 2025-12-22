@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kickers - LDFFW Points System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/crud.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LDFFW Points System - Kickers</h1>
+            <p class="subtitle">Manage Kicker Scoring Rules</p>
+            <nav class="position-nav">
+                <a href="points-system.html" class="nav-link">Back to Overview</a>
+                <a href="quarterbacks.html" class="nav-link">Quarterbacks</a>
+                <a href="running-backs.html" class="nav-link">Running Backs/WR</a>
+                <a href="defense.html" class="nav-link">Defense/Special Teams</a>
+            </nav>
+        </header>
+
+        <div class="content">
+            <!-- CREATE FORM -->
+            <section class="crud-section">
+                <h2>Add New Scoring Rule</h2>
+                <form id="addRuleForm" class="crud-form">
+                    <div class="form-group">
+                        <label for="ruleDescription">Rule Description:</label>
+                        <input type="text" id="ruleDescription" placeholder="e.g., Per extra point" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rulePoints">Points:</label>
+                        <input type="number" id="rulePoints" placeholder="e.g., 1" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ruleType">Rule Type:</label>
+                        <select id="ruleType">
+                            <option value="normal">Normal</option>
+                            <option value="bonus">Bonus</option>
+                            <option value="negative">Negative</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Rule</button>
+                </form>
+            </section>
+
+            <!-- READ/DISPLAY -->
+            <section class="crud-section">
+                <h2>Current Scoring Rules</h2>
+                <div id="rulesList" class="rules-list">
+                    <!-- Rules will be populated here -->
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>LDFFW Points System | Last Updated: December 21, 2025</p>
+        </footer>
+    </div>
+
+    <script src="js/pointsLoader.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/kickers.js"></script>
+</body>
+</html>

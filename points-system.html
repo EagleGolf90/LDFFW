@@ -1,0 +1,152 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFFW Points System</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LDFFW Points System</h1>
+            <p class="subtitle">Comprehensive Scoring Rules</p>
+        </header>
+        
+        <div class="content" id="points-content">
+            <!-- Points will be loaded dynamically from points.json -->
+        </div>
+        
+        <footer>
+            <p>LDFFW Points System | Last Updated: December 20, 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        // Load points data from JSON and render dynamically
+        async function loadPointsData() {
+            try {
+                const response = await fetch('data/points.json', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                renderPointsContent(data);
+            } catch (error) {
+                console.error('Error loading points data:', error);
+                document.getElementById('points-content').innerHTML = '<p>Error loading points data. Please ensure points.json is accessible.</p>';
+            }
+        }
+
+        function renderPointsContent(data) {
+            const container = document.getElementById('points-content');
+            let html = '';
+
+            // Position titles mapping
+            const positionTitles = {
+                quarterbacks: 'Quarterbacks',
+                runningBacks: 'Running Backs/Wide Receivers',
+                kickers: 'Kickers',
+                defense: 'Defense/Special Teams'
+            };
+
+            // Render each position section
+            Object.entries(data).forEach(([position, rules]) => {
+                const title = positionTitles[position];
+                if (!title) return;
+
+                html += `<div class="position-section">`;
+                html += `<h2 class="position-title">${title}</h2>`;
+
+                rules.forEach(rule => {
+                    const pointsClass = rule.type === 'bonus' ? 'bonus' : (rule.type === 'negative' ? 'negative' : '');
+                    const pointsDisplay = rule.points >= 0 ? `${rule.points} pt${rule.points !== 1 ? 's' : ''}` : `${rule.points} pt${rule.points !== -1 ? 's' : ''}`;
+                    html += `
+                        <div class="points-rule">
+                            <span class="rule-description">${rule.description}</span>
+                            <span class="points-value ${pointsClass}">${rule.points >= 0 ? '' : ''}${pointsDisplay}</span>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            // Add additional notes and special sections
+            html += `
+                <div class="position-section">
+                    <div class="note">
+                        <strong>Note:</strong> KR & PR cannot add Defense/Special Teams points
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">Field Goal Distance Bonuses</h3>
+                    <div class="bonus-grid">
+                        <div class="bonus-item">
+                            <div class="bonus-item-range">20-29 yards</div>
+                            <div class="bonus-item-points">3 pts</div>
+                        </div>
+                        <div class="bonus-item">
+                            <div class="bonus-item-range">30-39 yards</div>
+                            <div class="bonus-item-points">6 pts</div>
+                        </div>
+                        <div class="bonus-item">
+                            <div class="bonus-item-range">40-49 yards</div>
+                            <div class="bonus-item-points">9 pts</div>
+                        </div>
+                        <div class="bonus-item">
+                            <div class="bonus-item-range">50-59 yards</div>
+                            <div class="bonus-item-points">12 pts</div>
+                        </div>
+                        <div class="bonus-item">
+                            <div class="bonus-item-range">60+ yards</div>
+                            <div class="bonus-item-points">15 pts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3 class="subsection-title">Point Spread Scoring</h3>
+                    <p style="margin-bottom: 15px; color: #333;">Defense teams get points equal to the point spread they win by:</p>
+                    
+                    <div class="defense-example">
+                        <div class="example-row">
+                            <span class="example-label">Example:</span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="example-row">
+                            <span class="example-label">Green Bay</span>
+                            <span class="example-value">30</span>
+                            <span class="example-points">+9 pts</span>
+                        </div>
+                        <div class="example-row">
+                            <span class="example-label">Baltimore</span>
+                            <span class="example-value">21</span>
+                            <span class="example-points">-9 pts</span>
+                        </div>
+                        <div class="example-row">
+                            <span class="example-label">Margin</span>
+                            <span class="example-value">9 points</span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 0.95em; color: #666;">Green Bay earns +9 pts and Baltimore earns -9 pts based on the 9-point margin of victory.</p>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Load data when page is ready
+        document.addEventListener('DOMContentLoaded', loadPointsData);
+    </script>
+
+    <script src="js/pointsLoader.js"></script>
+</body>
+</html>
