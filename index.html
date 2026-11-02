@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFFW Points System - Home</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/crud.css">
+    <style>
+        .home-intro {
+            text-align: center;
+            color: #333;
+            font-size: 1.1em;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .home-card {
+            display: block;
+            text-decoration: none;
+            background: #fafafa;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 30px 25px;
+            transition: all 0.3s;
+        }
+
+        .home-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+            transform: translateY(-4px);
+        }
+
+        .home-card-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .home-card-title {
+            font-size: 1.3em;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .home-card-desc {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .home-card-count {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .home-card.overview-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+
+        .home-card.overview-card .home-card-title {
+            color: white;
+        }
+
+        .home-card.overview-card .home-card-desc {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .home-card.overview-card .home-card-count {
+            background: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LDFFW Points System</h1>
+            <p class="subtitle">League Dads Fantasy Football Weekend</p>
+            <nav class="position-nav">
+                <a href="points-system.html" class="nav-link">Points Overview</a>
+                <a href="quarterbacks.html" class="nav-link">Quarterbacks</a>
+                <a href="running-backs.html" class="nav-link">Running Backs/WR</a>
+                <a href="kickers.html" class="nav-link">Kickers</a>
+                <a href="defense.html" class="nav-link">Defense/Special Teams</a>
+            </nav>
+        </header>
+
+        <div class="content">
+            <p class="home-intro">
+                Welcome to the LDFFW Points System. View the complete scoring rules
+                or manage the rules for each position below.
+            </p>
+
+            <div class="home-grid">
+                <a href="points-system.html" class="home-card overview-card">
+                    <div class="home-card-icon">&#127942;</div>
+                    <div class="home-card-title">Points Overview</div>
+                    <div class="home-card-desc">See all scoring rules for every position in one place, including field goal bonuses and point spread scoring.</div>
+                    <span class="home-card-count">Read-only</span>
+                </a>
+
+                <a href="quarterbacks.html" class="home-card">
+                    <div class="home-card-icon">&#127944;</div>
+                    <div class="home-card-title">Quarterbacks</div>
+                    <div class="home-card-desc">Manage passing, rushing, and turnover scoring rules for quarterbacks.</div>
+                    <span class="home-card-count" data-position="quarterbacks">&ndash; rules</span>
+                </a>
+
+                <a href="running-backs.html" class="home-card">
+                    <div class="home-card-icon">&#127939;</div>
+                    <div class="home-card-title">Running Backs/WR</div>
+                    <div class="home-card-desc">Manage rushing, receiving, and touchdown scoring rules for running backs and wide receivers.</div>
+                    <span class="home-card-count" data-position="runningBacks">&ndash; rules</span>
+                </a>
+
+                <a href="kickers.html" class="home-card">
+                    <div class="home-card-icon">&#129461;</div>
+                    <div class="home-card-title">Kickers</div>
+                    <div class="home-card-desc">Manage field goal, extra point, and distance bonus scoring rules for kickers.</div>
+                    <span class="home-card-count" data-position="kickers">&ndash; rules</span>
+                </a>
+
+                <a href="defense.html" class="home-card">
+                    <div class="home-card-icon">&#128737;&#65039;</div>
+                    <div class="home-card-title">Defense/Special Teams</div>
+                    <div class="home-card-desc">Manage sacks, turnovers, touchdowns, and point spread scoring rules for defense and special teams.</div>
+                    <span class="home-card-count" data-position="defense">&ndash; rules</span>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>LDFFW Points System | Last Updated: December 21, 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        // Fill in the per-position rule counts; leave placeholders if the fetch fails
+        async function loadRuleCounts() {
+            try {
+                const response = await fetch('data/points.json', {
+                    headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                document.querySelectorAll('.home-card-count[data-position]').forEach(el => {
+                    const rules = data[el.dataset.position];
+                    if (Array.isArray(rules)) {
+                        el.textContent = `${rules.length} rule${rules.length !== 1 ? 's' : ''}`;
+                    }
+                });
+            } catch (error) {
+                console.warn('Could not load rule counts:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRuleCounts);
+    </script>
+</body>
+</html>
