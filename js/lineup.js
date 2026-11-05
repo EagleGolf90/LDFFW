@@ -32,9 +32,7 @@ function playerName(p) {
 function readLocalData() {
   try {
     const data = JSON.parse(localStorage.getItem(LOCAL_KEY));
-    return data && typeof data === "object" && !Array.isArray(data)
-      ? data
-      : {};
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
   } catch (e) {
     return {};
   }
@@ -106,9 +104,7 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
             Select a {slot.position === "DEF" ? "defense" : "player"}…
           </span>
         )}
-        <span
-          style={{ display: "flex", alignItems: "center", gap: "4px" }}
-        >
+        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
           {player && (
             <span
               className="clear-btn"
@@ -137,9 +133,7 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
           />
           <div className="dropdown-list">
             {filtered.length === 0 ? (
-              <div className="dropdown-empty">
-                No available players match.
-              </div>
+              <div className="dropdown-empty">No available players match.</div>
             ) : (
               filtered.map((p) => (
                 <button
@@ -183,9 +177,7 @@ function App() {
       )
       .catch((err) => {
         console.error("Could not load players.json:", err);
-        setLoadError(
-          "Could not load the NFL player list (data/players.json).",
-        );
+        setLoadError("Could not load the NFL player list (data/players.json).");
       });
   }, []);
 
@@ -269,8 +261,7 @@ function App() {
         (p) =>
           p.position === slot.position &&
           (!pickedIds.has(p.player_id) ||
-            (lineup[slot.id] &&
-              lineup[slot.id].player_id === p.player_id)),
+            (lineup[slot.id] && lineup[slot.id].player_id === p.player_id)),
       ),
     [players, pickedIds, lineup],
   );
@@ -346,21 +337,6 @@ function App() {
         <nav className="position-nav">
           <a href="index.html" className="nav-link">
             Home
-          </a>
-          <a href="points-system.html" className="nav-link">
-            Points Overview
-          </a>
-          <a href="quarterbacks.html" className="nav-link">
-            Quarterbacks
-          </a>
-          <a href="running-backs.html" className="nav-link">
-            Running Backs/WR
-          </a>
-          <a href="kickers.html" className="nav-link">
-            Kickers
-          </a>
-          <a href="defense.html" className="nav-link">
-            Defense/Special Teams
           </a>
           <a href="lineup.html" className="nav-link active">
             My Lineup
@@ -476,9 +452,7 @@ function App() {
           </div>
         </div>
         {status && (
-          <div className={"status status-" + status.type}>
-            {status.text}
-          </div>
+          <div className={"status status-" + status.type}>{status.text}</div>
         )}
       </div>
 
