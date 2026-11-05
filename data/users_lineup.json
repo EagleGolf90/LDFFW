@@ -1,1 +1,69 @@
-{}
+{
+  "Brian Timberlake": {
+    "9": {
+      "QB": {
+        "player_id": "qb-josh-allen",
+        "first_name": "Josh",
+        "last_name": "Allen",
+        "position": "QB",
+        "nfl_team": "BUF"
+      },
+      "RB1": {
+        "player_id": "rb-saquon-barkley",
+        "first_name": "Saquon",
+        "last_name": "Barkley",
+        "position": "RB",
+        "nfl_team": "PHI"
+      },
+      "RB2": {
+        "player_id": "rb-bijan-robinson",
+        "first_name": "Bijan",
+        "last_name": "Robinson",
+        "position": "RB",
+        "nfl_team": "ATL"
+      },
+      "WR1": {
+        "player_id": "wr-jamarr-chase",
+        "first_name": "Ja'Marr",
+        "last_name": "Chase",
+        "position": "WR",
+        "nfl_team": "CIN"
+      },
+      "WR2": {
+        "player_id": "wr-amon-ra-st-brown",
+        "first_name": "Amon-Ra",
+        "last_name": "St. Brown",
+        "position": "WR",
+        "nfl_team": "DET"
+      },
+      "WR3": {
+        "player_id": "wr-puka-nacua",
+        "first_name": "Puka",
+        "last_name": "Nacua",
+        "position": "WR",
+        "nfl_team": "LAR"
+      },
+      "TE": {
+        "player_id": "te-brock-bowers",
+        "first_name": "Brock",
+        "last_name": "Bowers",
+        "position": "TE",
+        "nfl_team": "LV"
+      },
+      "K": {
+        "player_id": "k-wil-lutz",
+        "first_name": "Wil",
+        "last_name": "Lutz",
+        "position": "K",
+        "nfl_team": "DEN"
+      },
+      "DEF": {
+        "player_id": "def-sf",
+        "first_name": "San Francisco",
+        "last_name": "49ers",
+        "position": "DEF",
+        "nfl_team": "SF"
+      }
+    }
+  }
+}

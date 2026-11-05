@@ -28,6 +28,30 @@ function playerName(p) {
   return `${p.first_name} ${p.last_name}`;
 }
 
+function getKickoff(game) {
+  if (!game.game_date || !game.start_time) return null;
+  const kickoff = new Date(`${game.game_date}T${game.start_time}`);
+  return Number.isNaN(kickoff.getTime()) ? null : kickoff;
+}
+
+function formatWeekDates(games) {
+  const dates = games
+    .map((game) => game.game_date)
+    .filter(Boolean)
+    .map((date) => {
+      const [year, month, day] = date.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    })
+    .sort((a, b) => a - b);
+  if (dates.length === 0) return "Dates TBD";
+
+  const format = (date) =>
+    date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return dates[0].toDateString() === dates[dates.length - 1].toDateString()
+    ? format(dates[0])
+    : `${format(dates[0])} - ${format(dates[dates.length - 1])}`;
+}
+
 // Local fallback mirrors the JSON file: { [user_id]: { [week_id]: { QB: {...}, ... } } }
 function readLocalData() {
   try {
@@ -46,11 +70,15 @@ function writeLocalLineup(userId, weekId, slots) {
 }
 
 // Searchable player dropdown for one lineup slot
-function PlayerPicker({ slot, player, options, onSelect, onClear }) {
+function PlayerPicker({ slot, player, options, onSelect, onClear, disabled }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const wrapRef = useRef(null);
   const searchRef = useRef(null);
+
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -82,6 +110,7 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
   }, [options, query]);
 
   const choose = (p) => {
+    if (disabled) return;
     onSelect(p);
     setOpen(false);
     setQuery("");
@@ -92,7 +121,8 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
       <button
         type="button"
         className={"picker-field" + (player ? " has-player" : "")}
-        onClick={() => setOpen((o) => !o)}
+        disabled={disabled}
+        onClick={() => !disabled && setOpen((o) => !o)}
       >
         {player ? (
           <span className="picked-player">
@@ -105,7 +135,7 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
           </span>
         )}
         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          {player && (
+          {player && !disabled && (
             <span
               className="clear-btn"
               title="Remove"
@@ -122,7 +152,7 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
         </span>
       </button>
 
-      {open && (
+      {open && !disabled && (
         <div className="dropdown">
           <input
             ref={searchRef}
@@ -157,6 +187,10 @@ function PlayerPicker({ slot, player, options, onSelect, onClear }) {
 function App() {
   const [players, setPlayers] = useState([]);
   const [loadError, setLoadError] = useState(null);
+  const [schedule, setSchedule] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [scheduleError, setScheduleError] = useState(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
   const [userId, setUserId] = useState("");
   const [weekId, setWeekId] = useState("1");
   const [lineup, setLineup] = useState(emptyLineup());
@@ -180,6 +214,61 @@ function App() {
         setLoadError("Could not load the NFL player list (data/players.json).");
       });
   }, []);
+
+  useEffect(() => {
+    fetch("data/nfl_schedules.json", {
+      headers: { Accept: "application/json" },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error("Schedule data is empty or invalid");
+        }
+        setSchedule(data);
+      })
+      .catch((err) => {
+        console.error("Could not load nfl_schedules.json:", err);
+        setScheduleError(
+          "Could not load the NFL schedule (data/nfl_schedules.json). Lineups are read-only until the schedule is available.",
+        );
+      })
+      .finally(() => setScheduleLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const scheduleSeason = useMemo(() => {
+    const seasons = schedule
+      .map((game) => Number(game.season))
+      .filter(Number.isFinite);
+    return seasons.length ? Math.max(...seasons) : null;
+  }, [schedule]);
+  const seasonGames = useMemo(
+    () => schedule.filter((game) => Number(game.season) === scheduleSeason),
+    [schedule, scheduleSeason],
+  );
+  const weekGames = useMemo(
+    () => seasonGames.filter((game) => Number(game.week) === Number(weekId)),
+    [seasonGames, weekId],
+  );
+  const weekDeadline = useMemo(
+    () =>
+      weekGames
+        .map(getKickoff)
+        .filter(Boolean)
+        .sort((a, b) => a - b)[0] || null,
+    [weekGames],
+  );
+  const readOnly =
+    scheduleLoading ||
+    Boolean(scheduleError) ||
+    (weekDeadline && currentTime >= weekDeadline.getTime());
 
   const applySaved = useCallback((saved) => {
     const next = emptyLineup();
@@ -268,11 +357,11 @@ function App() {
 
   const filledCount = Object.values(lineup).filter(Boolean).length;
   const complete = filledCount === SLOTS.length;
-  const canSave = complete && userId.trim() !== "" && !saving;
+  const canSave = complete && userId.trim() !== "" && !saving && !readOnly;
 
   const handleSave = async () => {
     const user = userId.trim();
-    if (!canSave) return;
+    if (!canSave || readOnly) return;
     setSaving(true);
     setStatus(null);
 
@@ -323,6 +412,7 @@ function App() {
   };
 
   const handleClearAll = () => {
+    if (readOnly) return;
     setLineup(emptyLineup());
     setStatus(null);
   };
@@ -337,6 +427,21 @@ function App() {
         <nav className="position-nav">
           <a href="index.html" className="nav-link">
             Home
+          </a>
+          <a href="points-system.html" className="nav-link">
+            Points Overview
+          </a>
+          <a href="quarterbacks.html" className="nav-link">
+            Quarterbacks
+          </a>
+          <a href="running-backs.html" className="nav-link">
+            Running Backs/WR
+          </a>
+          <a href="kickers.html" className="nav-link">
+            Kickers
+          </a>
+          <a href="defense.html" className="nav-link">
+            Defense/Special Teams
           </a>
           <a href="lineup.html" className="nav-link active">
             My Lineup
@@ -365,14 +470,37 @@ function App() {
               value={weekId}
               onChange={(e) => setWeekId(e.target.value)}
             >
-              {WEEKS.map((w) => (
-                <option key={w} value={w}>
-                  Week {w}
-                </option>
-              ))}
+              {WEEKS.map((w) => {
+                const games = seasonGames.filter(
+                  (game) => Number(game.week) === Number(w),
+                );
+                return (
+                  <option key={w} value={w}>
+                    Week {w} ({formatWeekDates(games)})
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
+        {scheduleError ? (
+          <div className="status status-error">{scheduleError}</div>
+        ) : scheduleLoading ? (
+          <div className="status status-warning">Loading NFL schedule…</div>
+        ) : weekDeadline && currentTime >= weekDeadline.getTime() ? (
+          <div className="status status-warning">
+            This week’s deadline has passed. The lineup is read-only.
+          </div>
+        ) : weekDeadline ? (
+          <div className="status status-warning">
+            Lineup locks at {weekDeadline.toLocaleString()}.
+          </div>
+        ) : (
+          <div className="status status-warning">
+            Kickoff time has not been announced. This lineup is currently
+            editable.
+          </div>
+        )}
       </div>
 
       <div className="panel">
@@ -398,6 +526,7 @@ function App() {
                   slot={slot}
                   player={lineup[slot.id]}
                   options={optionsFor(slot)}
+                  disabled={readOnly}
                   onSelect={(p) =>
                     setLineup((prev) => ({ ...prev, [slot.id]: p }))
                   }
@@ -430,6 +559,7 @@ function App() {
             <button
               type="button"
               className="btn btn-ghost"
+              disabled={readOnly}
               onClick={handleClearAll}
             >
               Clear All
@@ -440,9 +570,11 @@ function App() {
               disabled={!canSave}
               onClick={handleSave}
               title={
-                !userId.trim()
-                  ? "Enter a manager name first"
-                  : !complete
+                readOnly
+                  ? "This week's lineup is read-only"
+                  : !userId.trim()
+                    ? "Enter a manager name first"
+                    : !complete
                     ? "Fill all 9 lineup slots to save"
                     : "Save lineup"
               }

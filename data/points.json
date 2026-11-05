@@ -5,50 +5,70 @@
       "description": "Every 20 yards passing",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T18:24:01.429Z",
-      "updatedAt": "2025-12-21T22:47:04.206Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "2",
       "description": "Each completion",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "3",
       "description": "Every rushing & reception attempt",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "4",
       "description": "Every 10 yards rushing & reception",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "5",
       "description": "Per TD (Pass, Rush & Reception)",
       "points": 6,
       "type": "normal",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "6",
       "description": "Bonus points per 10 yards to TD (Pass, Rush & Rec)",
       "points": 2,
       "type": "bonus",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
     },
     {
       "id": "7",
       "description": "Intercept/Fumble",
       "points": -2,
       "type": "negative",
-      "createdAt": "2025-12-21T18:24:01.429Z"
+      "createdAt": "2026-11-05T15:21:39.051Z"
+    },
+    {
+      "id": "1793892224234",
+      "description": "Rush, Rec TD",
+      "points": 8,
+      "type": "bonus",
+      "createdAt": "2026-11-05T15:23:44.234Z"
+    },
+    {
+      "id": "1793892257207",
+      "description": "2 PTS Conversion",
+      "points": 2,
+      "type": "normal",
+      "createdAt": "2026-11-05T15:24:17.207Z"
+    },
+    {
+      "id": "1793892273067",
+      "description": "Intercept/Fumble Lost",
+      "points": -1,
+      "type": "normal",
+      "createdAt": "2026-11-05T15:24:33.067Z"
     }
   ],
   "runningBacks": [
@@ -57,56 +77,71 @@
       "description": "Per carry",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "2",
       "description": "Every 10 yards rushing",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "3",
       "description": "Per catch",
       "points": 2,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "4",
       "description": "Every 20 yards reception",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "5",
       "description": "Touchdown",
       "points": 6,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "6",
       "description": "Bonus points per 10 yards to TD",
       "points": 2,
-      "type": "bonus",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "type": "normal",
+      "createdAt": "2026-11-05T15:24:51.479Z",
+      "updatedAt": "2026-11-05T15:25:42.778Z"
     },
     {
       "id": "7",
       "description": "Every 20 yards passing",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
     },
     {
       "id": "8",
       "description": "Each completion",
       "points": 1,
       "type": "normal",
-      "createdAt": "2025-12-21T00:00:00.000Z"
+      "createdAt": "2026-11-05T15:24:51.479Z"
+    },
+    {
+      "id": "1793892392698",
+      "description": "2 PTS Conversion",
+      "points": 2,
+      "type": "normal",
+      "createdAt": "2026-11-05T15:26:32.698Z"
+    },
+    {
+      "id": "1793892455452",
+      "description": "Fumble lost/Intercepts (RB/WR can't add pts from KR/PR from DT PTS.)",
+      "points": -2,
+      "type": "normal",
+      "createdAt": "2026-11-05T15:27:35.452Z"
     }
   ],
   "kickers": [
