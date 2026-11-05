@@ -20,8 +20,11 @@ app.use(express.static(path.join(__dirname, '.')));
 // Path to points.json
 const POINTS_FILE = path.join(__dirname, 'data', 'points.json');
 
-// Path to users_lineup.json (the users_lineup "table": array of rows)
+// Path to users_lineup.json (nested JSON keyed by user_id -> week_id -> slot)
 const LINEUP_FILE = path.join(__dirname, 'data', 'users_lineup.json');
+
+// The nine lineup slots every saved lineup must fill
+const LINEUP_SLOTS = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'WR3', 'TE', 'K', 'DEF'];
 
 // Path to config.json (the config "table": commissioner access control)
 const CONFIG_FILE = path.join(__dirname, 'data', 'config.json');
@@ -222,24 +225,25 @@ app.delete('/api/points/:position/:id', (req, res) => {
 });
 
 /**
- * Read the users_lineup table (returns [] if the file is missing/corrupt)
+ * Read the lineup data (returns {} if the file is missing/corrupt)
+ * Shape: { [user_id]: { [week_id]: { QB: {...}, RB1: {...}, ... } } }
  */
-function readLineupTable() {
+function readLineupData() {
     try {
-        const rows = JSON.parse(fs.readFileSync(LINEUP_FILE, 'utf8'));
-        return Array.isArray(rows) ? rows : [];
+        const data = JSON.parse(fs.readFileSync(LINEUP_FILE, 'utf8'));
+        return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     } catch (error) {
-        return [];
+        return {};
     }
 }
 
 /**
- * Validate a single users_lineup row
+ * Validate a single player entry in a lineup slot
  */
-function isValidLineupRow(row) {
-    return row && typeof row === 'object' &&
-        ['user_id', 'week_id', 'player_id', 'first_name', 'last_name', 'position', 'nfl_team']
-            .every(field => typeof row[field] === 'string' && row[field].trim() !== '');
+function isValidLineupPlayer(player) {
+    return player && typeof player === 'object' &&
+        ['player_id', 'first_name', 'last_name', 'position', 'nfl_team']
+            .every(field => typeof player[field] === 'string' && player[field].trim() !== '');
 }
 
 /**
@@ -249,10 +253,9 @@ function isValidLineupRow(row) {
 app.get('/api/lineup/:userId/:weekId', (req, res) => {
     try {
         const { userId, weekId } = req.params;
-        const rows = readLineupTable().filter(
-            row => row.user_id === userId && row.week_id === weekId
-        );
-        res.json({ success: true, data: rows });
+        const data = readLineupData();
+        const lineup = (data[userId] && data[userId][weekId]) || null;
+        res.json({ success: true, data: lineup });
     } catch (error) {
         console.error('Error reading users_lineup.json:', error);
         res.status(500).json({ success: false, error: 'Failed to read lineup data' });
@@ -261,52 +264,56 @@ app.get('/api/lineup/:userId/:weekId', (req, res) => {
 
 /**
  * POST /api/lineup
- * Save a user's lineup for a week (replaces that user's rows for the week)
- * Expected body: { user_id, week_id, players: [{ player_id, first_name, last_name, position, nfl_team }, ...] }
+ * Save a user's lineup for a week (replaces that user/week's lineup)
+ * Expected body: { user_id, week_id, lineup: { QB: { player_id, first_name, last_name, position, nfl_team }, RB1: {...}, ... } }
  */
 app.post('/api/lineup', (req, res) => {
     try {
-        const { user_id, week_id, players } = req.body || {};
+        const { user_id, week_id, lineup } = req.body || {};
 
         if (typeof user_id !== 'string' || user_id.trim() === '' ||
             typeof week_id !== 'string' || week_id.trim() === '' ||
-            !Array.isArray(players)) {
+            !lineup || typeof lineup !== 'object' || Array.isArray(lineup)) {
             return res.status(400).json({
                 success: false,
-                error: 'Expected body: { user_id, week_id, players: [...] }'
+                error: 'Expected body: { user_id, week_id, lineup: { QB: {...}, RB1: {...}, ... } }'
             });
         }
 
-        const newRows = players.map(p => ({
-            user_id: user_id.trim(),
-            week_id: week_id.trim(),
-            player_id: String(p.player_id || ''),
-            first_name: String(p.first_name || ''),
-            last_name: String(p.last_name || ''),
-            position: String(p.position || ''),
-            nfl_team: String(p.nfl_team || '')
-        }));
-
-        if (!newRows.every(isValidLineupRow)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Each player needs player_id, first_name, last_name, position and nfl_team'
-            });
+        const savedLineup = {};
+        for (const slot of LINEUP_SLOTS) {
+            const p = lineup[slot];
+            if (!isValidLineupPlayer(p)) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Slot '${slot}' needs a player with player_id, first_name, last_name, position and nfl_team`
+                });
+            }
+            savedLineup[slot] = {
+                player_id: String(p.player_id),
+                first_name: String(p.first_name),
+                last_name: String(p.last_name),
+                position: String(p.position),
+                nfl_team: String(p.nfl_team)
+            };
         }
 
-        const otherRows = readLineupTable().filter(
-            row => !(row.user_id === user_id.trim() && row.week_id === week_id.trim())
-        );
-        const table = otherRows.concat(newRows);
+        const data = readLineupData();
+        const userKey = user_id.trim();
+        const weekKey = week_id.trim();
+        if (!data[userKey]) {
+            data[userKey] = {};
+        }
+        data[userKey][weekKey] = savedLineup;
 
-        fs.writeFileSync(LINEUP_FILE, JSON.stringify(table, null, 2), 'utf8');
+        fs.writeFileSync(LINEUP_FILE, JSON.stringify(data, null, 2), 'utf8');
 
-        console.log(`✓ Saved lineup for user '${user_id}' week '${week_id}' (${newRows.length} players)`);
+        console.log(`✓ Saved lineup for user '${userKey}' week '${weekKey}' (${LINEUP_SLOTS.length} players)`);
 
         res.json({
             success: true,
             message: 'Lineup saved successfully',
-            data: newRows
+            data: savedLineup
         });
     } catch (error) {
         console.error('Error saving users_lineup.json:', error);
@@ -321,19 +328,21 @@ app.post('/api/lineup', (req, res) => {
 app.delete('/api/lineup/:userId/:weekId', (req, res) => {
     try {
         const { userId, weekId } = req.params;
-        const table = readLineupTable();
-        const remaining = table.filter(
-            row => !(row.user_id === userId && row.week_id === weekId)
-        );
+        const data = readLineupData();
 
-        if (remaining.length === table.length) {
+        if (!data[userId] || !data[userId][weekId]) {
             return res.status(404).json({
                 success: false,
                 error: `No lineup found for user '${userId}' week '${weekId}'`
             });
         }
 
-        fs.writeFileSync(LINEUP_FILE, JSON.stringify(remaining, null, 2), 'utf8');
+        delete data[userId][weekId];
+        if (Object.keys(data[userId]).length === 0) {
+            delete data[userId];
+        }
+
+        fs.writeFileSync(LINEUP_FILE, JSON.stringify(data, null, 2), 'utf8');
 
         console.log(`✓ Deleted lineup for user '${userId}' week '${weekId}'`);
 
