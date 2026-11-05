@@ -23,6 +23,9 @@ const POINTS_FILE = path.join(__dirname, 'data', 'points.json');
 // Path to users_lineup.json (the users_lineup "table": array of rows)
 const LINEUP_FILE = path.join(__dirname, 'data', 'users_lineup.json');
 
+// Path to config.json (the config "table": commissioner access control)
+const CONFIG_FILE = path.join(__dirname, 'data', 'config.json');
+
 /**
  * Validate the points data structure
  */
@@ -342,6 +345,27 @@ app.delete('/api/lineup/:userId/:weekId', (req, res) => {
 });
 
 /**
+ * GET /api/config
+ * Load the access config (who the commissioner is) from config.json
+ */
+app.get('/api/config', (req, res) => {
+    try {
+        const data = fs.readFileSync(CONFIG_FILE, 'utf8');
+        const config = JSON.parse(data);
+        res.json({
+            success: true,
+            data: config
+        });
+    } catch (error) {
+        console.error('Error reading config.json:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to read config data'
+        });
+    }
+});
+
+/**
  * Health check endpoint
  */
 app.get('/api/health', (req, res) => {
@@ -367,6 +391,7 @@ app.listen(PORT, () => {
     console.log(`║    GET  /api/lineup/:userId/:weekId                       ║`);
     console.log(`║    POST /api/lineup                                       ║`);
     console.log(`║    DELETE /api/lineup/:userId/:weekId                     ║`);
+    console.log(`║    GET  /api/config                                        ║`);
     console.log(`║    GET  /api/health                                        ║`);
     console.log(`║                                                            ║`);
     console.log(`║  Static files served from: ${path.join(__dirname, '.')}`);

@@ -29,7 +29,9 @@ LDFFW Points System: a small vanilla HTML/CSS/JS site for managing fantasy-footb
 - `addRule` / `updateRule` / `deleteRule` write localStorage synchronously, then fire-and-forget `saveToJSON()`, which POSTs the full rule array to the hardcoded `http://localhost:3000/api/save-points/<jsonKey>`. If that fails it logs a warning and still returns success.
 - New rule IDs are `Date.now().toString()`; seed IDs are `"1"`, `"2"`, ...
 
-**Backend (`server.js`):** synchronous `fs` read/modify/write of `points.json`. Endpoints: `GET /api/points`, `GET /api/points/:position`, `POST /api/save-points` (whole file), `POST /api/save-points/:position` (body `{ rules: [...] }`), `DELETE /api/points/:position/:id`, `GET /api/health`.
+**Backend (`server.js`):** synchronous `fs` read/modify/write of `points.json`. Endpoints: `GET /api/points`, `GET /api/points/:position`, `POST /api/save-points` (whole file), `POST /api/save-points/:position` (body `{ rules: [...] }`), `DELETE /api/points/:position/:id`, `GET /api/config`, `GET /api/health`.
+
+**Commissioner access (`js/access.js` + `data/config.json`):** the four position pages are commissioner-only for editing. `data/config.json` is the config "table" (`{ "commissioners": ["..."] }`). On page load, `AccessControl` fetches `api/config` (falling back to `data/config.json` on static hosting), prompts for a user id (remembered in localStorage key `ldffw_user`), and compares it case-insensitively against `commissioners`. Non-commissioners get `body.read-only`, which hides the `.commissioner-only` add-rule section and `.rule-actions` via CSS in `css/crud.css` — this is honor-system UI gating only; the API endpoints are not authenticated.
 
 ## Gotchas
 
