@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDFFW - My Lineup</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0b0d14;
+            --surface: #151823;
+            --surface-2: #1c2030;
+            --border: #272c3f;
+            --border-light: #343b55;
+            --text: #e7e9f2;
+            --text-dim: #9aa1b9;
+            --text-faint: #6b7291;
+            --accent: #667eea;
+            --accent-2: #764ba2;
+            --success: #34d399;
+            --danger: #f87171;
+            --warning: #fbbf24;
+        }
+
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(900px 400px at 15% -5%, rgba(102, 126, 234, 0.18), transparent 60%),
+                radial-gradient(900px 500px at 90% 0%, rgba(118, 75, 162, 0.16), transparent 60%);
+            background-repeat: no-repeat;
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 36px 20px 24px;
+        }
+
+        header h1 {
+            font-size: 2.4em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #8b9cf7 0%, #b185db 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        header .subtitle {
+            color: var(--text-dim);
+            font-size: 1.05em;
+            margin-bottom: 22px;
+        }
+
+        .position-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            font-size: 0.92em;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .nav-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            border-color: transparent;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .panel-title {
+            font-size: 1.05em;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 18px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 0.82em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+        }
+
+        select option {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 14px;
+        }
+
+        .slot {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .slot.filled {
+            border-color: var(--border-light);
+        }
+
+        .slot-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pos-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 46px;
+            padding: 4px 10px;
+            border-radius: 7px;
+            font-size: 0.78em;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+        }
+
+        .pos-QB  { background: rgba(236, 72, 153, 0.16); color: #f472b6; }
+        .pos-RB  { background: rgba(56, 189, 248, 0.14); color: #38bdf8; }
+        .pos-WR  { background: rgba(74, 222, 128, 0.13); color: #4ade80; }
+        .pos-TE  { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+        .pos-K   { background: rgba(167, 139, 250, 0.16); color: #a78bfa; }
+        .pos-DEF { background: rgba(250, 204, 21, 0.13);  color: #facc15; }
+
+        .slot-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .picker {
+            position: relative;
+        }
+
+        .picker-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--surface);
+            border: 1px dashed var(--border-light);
+            border-radius: 10px;
+            color: var(--text-faint);
+            font-size: 0.97em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .picker-field:hover {
+            border-color: var(--accent);
+            color: var(--text-dim);
+        }
+
+        .picker-field.has-player {
+            border-style: solid;
+            border-color: var(--border-light);
+            color: var(--text);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.10) 0%, rgba(118, 75, 162, 0.10) 100%);
+        }
+
+        .picked-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .picked-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-chip {
+            flex: none;
+            font-size: 0.74em;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 7px;
+        }
+
+        .clear-btn {
+            flex: none;
+            background: none;
+            border: none;
+            color: var(--text-faint);
+            font-size: 1.05em;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            line-height: 1;
+        }
+
+        .clear-btn:hover {
+            color: var(--danger);
+            background: rgba(248, 113, 113, 0.12);
+        }
+
+        .caret {
+            flex: none;
+            font-size: 0.7em;
+            color: var(--text-faint);
+        }
+
+        .dropdown {
+            position: absolute;
+            z-index: 30;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #191d2b;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+            overflow: hidden;
+        }
+
+        .dropdown input[type="text"] {
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            background: #191d2b;
+            box-shadow: none;
+        }
+
+        .dropdown-list {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 14px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 0.95em;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.16);
+        }
+
+        .dropdown-empty {
+            padding: 14px;
+            color: var(--text-faint);
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 220px;
+            flex: 1;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.88em;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .btn {
+            padding: 12px 26px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn-save:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-ghost {
+            background: var(--surface-2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: var(--border-light);
+        }
+
+        .status {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.93em;
+        }
+
+        .status-success {
+            background: rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(248, 113, 113, 0.10);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            color: var(--danger);
+        }
+
+        .status-warning {
+            background: rgba(251, 191, 36, 0.10);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: var(--warning);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-faint);
+            font-size: 0.85em;
+            padding: 26px 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="react">
+        const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+        // Lineup structure: 1 QB, 2 RB, 3 WR, 1 TE, 1 K, 1 DEF team
+        const SLOTS = [
+            { id: 'QB',  label: 'Quarterback',     position: 'QB' },
+            { id: 'RB1', label: 'Running Back 1',  position: 'RB' },
+            { id: 'RB2', label: 'Running Back 2',  position: 'RB' },
+            { id: 'WR1', label: 'Wide Receiver 1', position: 'WR' },
+            { id: 'WR2', label: 'Wide Receiver 2', position: 'WR' },
+            { id: 'WR3', label: 'Wide Receiver 3', position: 'WR' },
+            { id: 'TE',  label: 'Tight End',       position: 'TE' },
+            { id: 'K',   label: 'Kicker',          position: 'K' },
+            { id: 'DEF', label: 'Defense / ST',    position: 'DEF' }
+        ];
+
+        const WEEKS = Array.from({ length: 18 }, (_, i) => String(i + 1));
+        const LOCAL_KEY = 'users_lineup'; // offline fallback copy of the users_lineup table
+
+        const emptyLineup = () =>
+            SLOTS.reduce((acc, slot) => ({ ...acc, [slot.id]: null }), {});
+
+        function playerName(p) {
+            return `${p.first_name} ${p.last_name}`;
+        }
+
+        function readLocalTable() {
+            try {
+                const rows = JSON.parse(localStorage.getItem(LOCAL_KEY));
+                return Array.isArray(rows) ? rows : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function writeLocalRows(userId, weekId, rows) {
+            const others = readLocalTable().filter(
+                r => !(r.user_id === userId && r.week_id === weekId)
+            );
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(others.concat(rows)));
+        }
+
+        // Searchable player dropdown for one lineup slot
+        function PlayerPicker({ slot, player, options, onSelect, onClear }) {
+            const [open, setOpen] = useState(false);
+            const [query, setQuery] = useState('');
+            const wrapRef = useRef(null);
+            const searchRef = useRef(null);
+
+            useEffect(() => {
+                if (!open) return;
+                const onDocClick = (e) => {
+                    if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+                        setOpen(false);
+                    }
+                };
+                const onKey = (e) => {
+                    if (e.key === 'Escape') setOpen(false);
+                };
+                document.addEventListener('mousedown', onDocClick);
+                document.addEventListener('keydown', onKey);
+                searchRef.current && searchRef.current.focus();
+                return () => {
+                    document.removeEventListener('mousedown', onDocClick);
+                    document.removeEventListener('keydown', onKey);
+                };
+            }, [open]);
+
+            const filtered = useMemo(() => {
+                const q = query.trim().toLowerCase();
+                if (!q) return options;
+                return options.filter(p =>
+                    playerName(p).toLowerCase().includes(q) ||
+                    p.nfl_team.toLowerCase().includes(q)
+                );
+            }, [options, query]);
+
+            const choose = (p) => {
+                onSelect(p);
+                setOpen(false);
+                setQuery('');
+            };
+
+            return (
+                <div className="picker" ref={wrapRef}>
+                    <button
+                        type="button"
+                        className={'picker-field' + (player ? ' has-player' : '')}
+                        onClick={() => setOpen(o => !o)}
+                    >
+                        {player ? (
+                            <span className="picked-player">
+                                <span className="team-chip">{player.nfl_team}</span>
+                                <span className="picked-name">{playerName(player)}</span>
+                            </span>
+                        ) : (
+                            <span>Select a {slot.position === 'DEF' ? 'defense' : 'player'}…</span>
+                        )}
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {player && (
+                                <span
+                                    className="clear-btn"
+                                    title="Remove"
+                                    onClick={(e) => { e.stopPropagation(); onClear(); setOpen(false); }}
+                                >
+                                    ✕
+                                </span>
+                            )}
+                            <span className="caret">▼</span>
+                        </span>
+                    </button>
+
+                    {open && (
+                        <div className="dropdown">
+                            <input
+                                ref={searchRef}
+                                type="text"
+                                placeholder="Search name or team…"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                            />
+                            <div className="dropdown-list">
+                                {filtered.length === 0 ? (
+                                    <div className="dropdown-empty">No available players match.</div>
+                                ) : (
+                                    filtered.map(p => (
+                                        <button
+                                            key={p.player_id}
+                                            type="button"
+                                            className="dropdown-item"
+                                            onClick={() => choose(p)}
+                                        >
+                                            <span>{playerName(p)}</span>
+                                            <span className="team-chip">{p.nfl_team}</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function App() {
+            const [players, setPlayers] = useState([]);
+            const [loadError, setLoadError] = useState(null);
+            const [userId, setUserId] = useState('');
+            const [weekId, setWeekId] = useState('1');
+            const [lineup, setLineup] = useState(emptyLineup());
+            const [status, setStatus] = useState(null); // { type, text }
+            const [saving, setSaving] = useState(false);
+
+            // Load the bundled player pool
+            useEffect(() => {
+                fetch('data/players.json', { headers: { 'Accept': 'application/json' } })
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => setPlayers(Array.isArray(data.players) ? data.players : []))
+                    .catch(err => {
+                        console.error('Could not load players.json:', err);
+                        setLoadError('Could not load the NFL player list (data/players.json).');
+                    });
+            }, []);
+
+            const applyRows = useCallback((rows) => {
+                const next = emptyLineup();
+                const used = new Set();
+                SLOTS.forEach(slot => {
+                    const row = rows.find(r => r.position === slot.position && !used.has(r.player_id));
+                    if (row) {
+                        used.add(row.player_id);
+                        next[slot.id] = {
+                            player_id: row.player_id,
+                            first_name: row.first_name,
+                            last_name: row.last_name,
+                            position: row.position,
+                            nfl_team: row.nfl_team
+                        };
+                    }
+                });
+                setLineup(next);
+                return rows.length > 0;
+            }, []);
+
+            // Load any saved lineup when the manager name or week changes
+            useEffect(() => {
+                const user = userId.trim();
+                setStatus(null);
+                if (!user) {
+                    setLineup(emptyLineup());
+                    return;
+                }
+                let cancelled = false;
+                const timer = setTimeout(async () => {
+                    let rows = null;
+                    try {
+                        const res = await fetch(`api/lineup/${encodeURIComponent(user)}/${encodeURIComponent(weekId)}`);
+                        if (res.ok) {
+                            const payload = await res.json();
+                            if (payload.success && Array.isArray(payload.data)) {
+                                rows = payload.data;
+                            }
+                        }
+                    } catch (e) {
+                        // Backend unavailable (e.g. GitHub Pages) — fall back to localStorage
+                    }
+                    if (rows === null) {
+                        rows = readLocalTable().filter(r => r.user_id === user && r.week_id === weekId);
+                    }
+                    if (!cancelled) {
+                        const found = applyRows(rows);
+                        if (found) {
+                            setStatus({ type: 'success', text: `Loaded saved lineup for ${user} — week ${weekId}.` });
+                        }
+                    }
+                }, 400);
+                return () => { cancelled = true; clearTimeout(timer); };
+            }, [userId, weekId, applyRows]);
+
+            const pickedIds = useMemo(() => {
+                const ids = new Set();
+                Object.values(lineup).forEach(p => { if (p) ids.add(p.player_id); });
+                return ids;
+            }, [lineup]);
+
+            const optionsFor = useCallback((slot) =>
+                players.filter(p =>
+                    p.position === slot.position &&
+                    (!pickedIds.has(p.player_id) ||
+                        (lineup[slot.id] && lineup[slot.id].player_id === p.player_id))
+                ),
+            [players, pickedIds, lineup]);
+
+            const filledCount = Object.values(lineup).filter(Boolean).length;
+            const complete = filledCount === SLOTS.length;
+            const canSave = complete && userId.trim() !== '' && !saving;
+
+            const handleSave = async () => {
+                const user = userId.trim();
+                if (!canSave) return;
+                setSaving(true);
+                setStatus(null);
+
+                const rows = SLOTS.map(slot => ({
+                    user_id: user,
+                    week_id: weekId,
+                    ...lineup[slot.id]
+                }));
+
+                try {
+                    const res = await fetch('api/lineup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: user, week_id: weekId, players: rows })
+                    });
+                    const payload = await res.json();
+                    if (!res.ok || !payload.success) {
+                        throw new Error(payload.error || `HTTP ${res.status}`);
+                    }
+                    writeLocalRows(user, weekId, rows);
+                    setStatus({
+                        type: 'success',
+                        text: `Lineup saved to users_lineup for ${user} — week ${weekId}. ✔`
+                    });
+                } catch (err) {
+                    console.warn('Could not save to server, using localStorage fallback:', err);
+                    writeLocalRows(user, weekId, rows);
+                    setStatus({
+                        type: 'warning',
+                        text: 'Server unavailable — lineup saved to this browser only. Run `npm start` to persist to users_lineup.'
+                    });
+                } finally {
+                    setSaving(false);
+                }
+            };
+
+            const handleClearAll = () => {
+                setLineup(emptyLineup());
+                setStatus(null);
+            };
+
+            return (
+                <div className="container">
+                    <header>
+                        <h1>My Lineup</h1>
+                        <p className="subtitle">League Dads Fantasy Football Weekend — set your weekly roster</p>
+                        <nav className="position-nav">
+                            <a href="index.html" className="nav-link">Home</a>
+                            <a href="points-system.html" className="nav-link">Points Overview</a>
+                            <a href="quarterbacks.html" className="nav-link">Quarterbacks</a>
+                            <a href="running-backs.html" className="nav-link">Running Backs/WR</a>
+                            <a href="kickers.html" className="nav-link">Kickers</a>
+                            <a href="defense.html" className="nav-link">Defense/Special Teams</a>
+                            <a href="lineup.html" className="nav-link active">My Lineup</a>
+                        </nav>
+                    </header>
+
+                    <div className="panel">
+                        <div className="panel-title">Manager &amp; Week</div>
+                        <div className="meta-grid">
+                            <div>
+                                <label htmlFor="user-id">Manager (user id)</label>
+                                <input
+                                    id="user-id"
+                                    type="text"
+                                    placeholder="e.g. kevin"
+                                    value={userId}
+                                    onChange={(e) => setUserId(e.target.value)}
+                                    autoComplete="off"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="week-id">Week</label>
+                                <select
+                                    id="week-id"
+                                    value={weekId}
+                                    onChange={(e) => setWeekId(e.target.value)}
+                                >
+                                    {WEEKS.map(w => (
+                                        <option key={w} value={w}>Week {w}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="panel">
+                        <div className="panel-title">
+                            Starting Lineup — 1 QB · 2 RB · 3 WR · 1 TE · 1 K · 1 DEF
+                        </div>
+                        {loadError ? (
+                            <div className="status status-error">{loadError}</div>
+                        ) : (
+                            <div className="slots-grid">
+                                {SLOTS.map(slot => (
+                                    <div key={slot.id} className={'slot' + (lineup[slot.id] ? ' filled' : '')}>
+                                        <div className="slot-head">
+                                            <span className={'pos-badge pos-' + slot.position}>{slot.position}</span>
+                                            <span className="slot-label">{slot.label}</span>
+                                        </div>
+                                        <PlayerPicker
+                                            slot={slot}
+                                            player={lineup[slot.id]}
+                                            options={optionsFor(slot)}
+                                            onSelect={(p) => setLineup(prev => ({ ...prev, [slot.id]: p }))}
+                                            onClear={() => setLineup(prev => ({ ...prev, [slot.id]: null }))}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="panel">
+                        <div className="toolbar">
+                            <div className="progress-wrap">
+                                <div className="progress-track">
+                                    <div
+                                        className="progress-fill"
+                                        style={{ width: `${(filledCount / SLOTS.length) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <span className="progress-text">{filledCount} / {SLOTS.length} slots filled</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button type="button" className="btn btn-ghost" onClick={handleClearAll}>
+                                    Clear All
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-save"
+                                    disabled={!canSave}
+                                    onClick={handleSave}
+                                    title={!userId.trim() ? 'Enter a manager name first'
+                                        : !complete ? 'Fill all 9 lineup slots to save'
+                                        : 'Save lineup'}
+                                >
+                                    {saving ? 'Saving…' : 'Save Lineup'}
+                                </button>
+                            </div>
+                        </div>
+                        {status && (
+                            <div className={'status status-' + status.type}>{status.text}</div>
+                        )}
+                    </div>
+
+                    <footer>
+                        <p>LDFFW Points System | Lineups are stored in the users_lineup table (data/users_lineup.json)</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
