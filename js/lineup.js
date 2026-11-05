@@ -52,6 +52,33 @@ function formatWeekDates(games) {
     : `${format(dates[0])} - ${format(dates[dates.length - 1])}`;
 }
 
+// Pick the week whose first/last game dates contain today; otherwise the
+// next upcoming week, or the final week once the season is over.
+function findDefaultWeek(games) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const byWeek = {};
+  games.forEach((game) => {
+    const week = Number(game.week);
+    if (!Number.isFinite(week) || !game.game_date) return;
+    const [year, month, day] = game.game_date.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    if (Number.isNaN(date.getTime())) return;
+    if (!byWeek[week]) {
+      byWeek[week] = { start: date, end: date };
+    } else {
+      if (date < byWeek[week].start) byWeek[week].start = date;
+      if (date > byWeek[week].end) byWeek[week].end = date;
+    }
+  });
+  const weeks = Object.keys(byWeek)
+    .map(Number)
+    .sort((a, b) => a - b);
+  if (weeks.length === 0) return null;
+  const current = weeks.find((w) => today <= byWeek[w].end);
+  return String(current !== undefined ? current : weeks[weeks.length - 1]);
+}
+
 // Local fallback mirrors the JSON file: { [user_id]: { [week_id]: { QB: {...}, ... } } }
 function readLocalData() {
   try {
@@ -196,6 +223,7 @@ function App() {
   const [lineup, setLineup] = useState(emptyLineup());
   const [status, setStatus] = useState(null); // { type, text }
   const [saving, setSaving] = useState(false);
+  const weekTouchedRef = useRef(false); // true once the user picks a week manually
 
   // Load the bundled player pool
   useEffect(() => {
@@ -228,6 +256,15 @@ function App() {
           throw new Error("Schedule data is empty or invalid");
         }
         setSchedule(data);
+        // Default the Week dropdown to today's week in the latest season
+        const seasons = data
+          .map((game) => Number(game.season))
+          .filter(Number.isFinite);
+        const season = seasons.length ? Math.max(...seasons) : null;
+        const defaultWeek = findDefaultWeek(
+          data.filter((game) => Number(game.season) === season),
+        );
+        if (defaultWeek && !weekTouchedRef.current) setWeekId(defaultWeek);
       })
       .catch((err) => {
         console.error("Could not load nfl_schedules.json:", err);
@@ -468,7 +505,10 @@ function App() {
             <select
               id="week-id"
               value={weekId}
-              onChange={(e) => setWeekId(e.target.value)}
+              onChange={(e) => {
+                weekTouchedRef.current = true;
+                setWeekId(e.target.value);
+              }}
             >
               {WEEKS.map((w) => {
                 const games = seasonGames.filter(
