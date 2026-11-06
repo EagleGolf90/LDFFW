@@ -25,3 +25,10 @@ jobs:
           port: 21
           local-dir: ./
           server-dir: kdga/ldffw/
+          # Keep the defaults, plus never upload/delete the live lineup data
+          # that api/lineup.php writes on the production server.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            data/users_lineup.json

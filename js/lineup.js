@@ -16,10 +16,31 @@ const SLOTS = [
 const WEEKS = Array.from({ length: 18 }, (_, i) => String(i + 1));
 const LOCAL_KEY = "users_lineup"; // offline fallback copy of data/users_lineup.json
 
-// When the page isn't served by the Node backend (e.g. Live Server on :5500,
-// GitHub Pages), talk to the local backend directly — it allows CORS.
-const API_BASE =
-  window.location.port === "3000" ? "" : "http://localhost:3000/";
+// How the lineup API is reached depends on where the page is served from:
+// - Node backend via `npm start` (:3000): same-origin Express routes.
+// - Local static hosting (Live Server on :5500, file://): talk to the local
+//   Node backend directly — it allows CORS.
+// - Production (FTP/PHP hosting): api/lineup.php reads/writes
+//   data/users_lineup.json on the server.
+const NODE_HOSTED = window.location.port === "3000";
+const LOCAL_DEV =
+  !NODE_HOSTED &&
+  (["localhost", "127.0.0.1"].includes(window.location.hostname) ||
+    window.location.protocol === "file:");
+
+function lineupLoadUrl(user, week) {
+  const u = encodeURIComponent(user);
+  const w = encodeURIComponent(week);
+  if (NODE_HOSTED) return `api/lineup/${u}/${w}`;
+  if (LOCAL_DEV) return `http://localhost:3000/api/lineup/${u}/${w}`;
+  return `api/lineup.php?user_id=${u}&week_id=${w}`;
+}
+
+function lineupSaveUrl() {
+  if (NODE_HOSTED) return "api/lineup";
+  if (LOCAL_DEV) return "http://localhost:3000/api/lineup";
+  return "api/lineup.php";
+}
 
 const emptyLineup = () =>
   SLOTS.reduce((acc, slot) => ({ ...acc, [slot.id]: null }), {});
@@ -340,9 +361,7 @@ function App() {
       let saved = null;
       let serverAnswered = false;
       try {
-        const res = await fetch(
-          `${API_BASE}api/lineup/${encodeURIComponent(user)}/${encodeURIComponent(weekId)}`,
-        );
+        const res = await fetch(lineupLoadUrl(user, weekId));
         if (res.ok) {
           const payload = await res.json();
           if (payload.success) {
@@ -415,7 +434,7 @@ function App() {
     });
 
     try {
-      const res = await fetch(`${API_BASE}api/lineup`, {
+      const res = await fetch(lineupSaveUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -441,7 +460,7 @@ function App() {
       writeLocalLineup(user, weekId, slots);
       setStatus({
         type: "warning",
-        text: "Server unavailable — lineup saved to this browser only. Run `npm start` to persist to data/users_lineup.json.",
+        text: "Server unavailable — lineup saved to this browser only.",
       });
     } finally {
       setSaving(false);
