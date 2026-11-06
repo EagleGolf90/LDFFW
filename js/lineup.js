@@ -480,7 +480,7 @@ function App() {
         <p className="subtitle">
           Louisville Deaf Fantasy Football Weekly — set your weekly roster
         </p>
-        <nav className="position-nav">
+        {/* <nav className="position-nav">
           <a href="index.html" className="nav-link">
             Home
           </a>
@@ -502,7 +502,7 @@ function App() {
           <a href="lineup.html" className="nav-link active">
             My Lineup
           </a>
-        </nav>
+        </nav> */}
       </header>
 
       <div className="panel">
@@ -634,8 +634,8 @@ function App() {
                   : !userId.trim()
                     ? "Enter a manager name first"
                     : !complete
-                    ? "Fill all 9 lineup slots to save"
-                    : "Save lineup"
+                      ? "Fill all 9 lineup slots to save"
+                      : "Save lineup"
               }
             >
               {saving ? "Saving…" : "Save Lineup"}

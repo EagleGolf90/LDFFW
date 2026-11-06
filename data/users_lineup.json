@@ -64,6 +64,71 @@
         "position": "DEF",
         "nfl_team": "SF"
       }
+    },
+    "10": {
+      "QB": {
+        "player_id": "qb-josh-allen",
+        "first_name": "Josh",
+        "last_name": "Allen",
+        "position": "QB",
+        "nfl_team": "BUF"
+      },
+      "RB1": {
+        "player_id": "rb-saquon-barkley",
+        "first_name": "Saquon",
+        "last_name": "Barkley",
+        "position": "RB",
+        "nfl_team": "PHI"
+      },
+      "RB2": {
+        "player_id": "rb-james-cook",
+        "first_name": "James",
+        "last_name": "Cook",
+        "position": "RB",
+        "nfl_team": "BUF"
+      },
+      "WR1": {
+        "player_id": "wr-jamarr-chase",
+        "first_name": "Ja'Marr",
+        "last_name": "Chase",
+        "position": "WR",
+        "nfl_team": "CIN"
+      },
+      "WR2": {
+        "player_id": "wr-puka-nacua",
+        "first_name": "Puka",
+        "last_name": "Nacua",
+        "position": "WR",
+        "nfl_team": "LAR"
+      },
+      "WR3": {
+        "player_id": "wr-tee-higgins",
+        "first_name": "Tee",
+        "last_name": "Higgins",
+        "position": "WR",
+        "nfl_team": "CIN"
+      },
+      "TE": {
+        "player_id": "te-tyler-warren",
+        "first_name": "Tyler",
+        "last_name": "Warren",
+        "position": "TE",
+        "nfl_team": "IND"
+      },
+      "K": {
+        "player_id": "k-harrison-butker",
+        "first_name": "Harrison",
+        "last_name": "Butker",
+        "position": "K",
+        "nfl_team": "KC"
+      },
+      "DEF": {
+        "player_id": "def-jax",
+        "first_name": "Jacksonville",
+        "last_name": "Jaguars",
+        "position": "DEF",
+        "nfl_team": "JAX"
+      }
     }
   },
   "Jeff Cecil": {
