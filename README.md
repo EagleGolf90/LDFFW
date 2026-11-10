@@ -13,6 +13,29 @@ If you're new to this project:
 
 ## 📚 Documentation Files
 
+### Production lineup storage (SQL Server)
+
+The production lineup page uses `api/lineup.php` to read, save, and delete
+`dbo.users_lineup` rows in SQL Server, scoped by owner, week, and slot.
+The table must already exist (see `scripts/create_users_lineup_table.js`).
+The PHP host requires Microsoft's `pdo_sqlsrv` extension and its ODBC driver,
+network access to SQL Server, and a trusted SQL Server TLS certificate.
+Configure `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `DB_PORT` in
+environment variables or the root `.env`; the default port is `1433`, not
+MySQL's `3306`. Deployment supplies these settings from repository secrets.
+The database login needs SELECT, INSERT, and DELETE permissions on the table.
+
+Choose a week, fill all nine slots, and click **Save Lineup**. Each week is
+saved separately. The page waits for the selected week's lineup to load
+before enabling editing and prevents switching weeks during a save.
+Production reports success only after SQL Server commits the save.
+Database failures return an error rather than silently writing JSON.
+The page can keep a browser-only backup, but explicitly warns that this
+is not a database save. Local `npm start` still uses `data/users_lineup.json`.
+
+Run the storage regression checks with `php scripts/test_lineup_store.php`
+(uses an isolated in-memory SQLite database, not production).
+
 ### [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 **What:** Complete summary of what was implemented  
 **Who:** Everyone - especially project managers and stakeholders  

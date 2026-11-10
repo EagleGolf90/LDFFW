@@ -20,8 +20,7 @@ const LOCAL_KEY = "users_lineup"; // offline fallback copy of data/users_lineup.
 // - Node backend via `npm start` (:3000): same-origin Express routes.
 // - Local static hosting (Live Server on :5500, file://): talk to the local
 //   Node backend directly — it allows CORS.
-// - Production (FTP/PHP hosting): api/lineup.php reads/writes
-//   data/users_lineup.json on the server.
+// - Production (FTP/PHP hosting): api/lineup.php reads/writes SQL Server.
 const NODE_HOSTED = window.location.port === "3000";
 const LOCAL_DEV =
   !NODE_HOSTED &&
@@ -244,7 +243,10 @@ function App() {
   const [lineup, setLineup] = useState(emptyLineup());
   const [status, setStatus] = useState(null); // { type, text }
   const [saving, setSaving] = useState(false);
+  const [loadedFor, setLoadedFor] = useState(null);
   const weekTouchedRef = useRef(false); // true once the user picks a week manually
+  const lineupKey = JSON.stringify([userId.trim(), weekId]);
+  const lineupLoading = userId.trim() !== "" && loadedFor !== lineupKey;
 
   // Load the bundled player pool
   useEffect(() => {
@@ -352,25 +354,27 @@ function App() {
   useEffect(() => {
     const user = userId.trim();
     setStatus(null);
+    setLineup(emptyLineup());
+    setLoadedFor(null);
     if (!user) {
-      setLineup(emptyLineup());
       return;
     }
     let cancelled = false;
     const timer = setTimeout(async () => {
       let saved = null;
       let serverAnswered = false;
+      let loadFailure = null;
       try {
         const res = await fetch(lineupLoadUrl(user, weekId));
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.success) {
-            serverAnswered = true;
-            saved = payload.data; // lineup object or null
-          }
+        const payload = await res.json();
+        if (!res.ok || !payload.success) {
+          throw new Error(payload.error || `HTTP ${res.status}`);
         }
+        serverAnswered = true;
+        saved = payload.data; // lineup object or null
       } catch (e) {
-        // Backend unavailable (e.g. GitHub Pages) — fall back to localStorage
+        console.warn("Could not load lineup from server:", e);
+        loadFailure = e.message;
       }
       if (!serverAnswered) {
         const local = readLocalData();
@@ -378,7 +382,13 @@ function App() {
       }
       if (!cancelled) {
         const found = applySaved(saved);
-        if (found) {
+        setLoadedFor(JSON.stringify([user, weekId]));
+        if (loadFailure) {
+          setStatus({
+            type: "warning",
+            text: `Could not load the server lineup: ${loadFailure} ${found ? "Showing a browser-only copy." : "No browser copy found."}`,
+          });
+        } else if (found) {
           setStatus({
             type: "success",
             text: `Loaded saved lineup for ${user} — week ${weekId}.`,
@@ -413,7 +423,8 @@ function App() {
 
   const filledCount = Object.values(lineup).filter(Boolean).length;
   const complete = filledCount === SLOTS.length;
-  const canSave = complete && userId.trim() !== "" && !saving && !readOnly;
+  const canSave =
+    complete && userId.trim() !== "" && !saving && !readOnly && !lineupLoading;
 
   const handleSave = async () => {
     const user = userId.trim();
@@ -433,6 +444,7 @@ function App() {
       };
     });
 
+    let saveStatus;
     try {
       const res = await fetch(lineupSaveUrl(), {
         method: "POST",
@@ -447,28 +459,44 @@ function App() {
       if (!res.ok || !payload.success) {
         throw new Error(payload.error || `HTTP ${res.status}`);
       }
-      writeLocalLineup(user, weekId, slots);
-      setStatus({
+      if (!NODE_HOSTED && !LOCAL_DEV && payload.storage !== "sqlserver") {
+        throw new Error(
+          "The server did not confirm a SQL Server save. Deploy the updated lineup API.",
+        );
+      }
+      saveStatus = {
         type: "success",
-        text: `Lineup saved to data/users_lineup.json for ${user} — week ${weekId}. ✔`,
-      });
+        text: `Lineup saved to ${payload.storage === "sqlserver" ? "SQL Server" : "the server"} for ${user} — week ${weekId}. ✔`,
+      };
     } catch (err) {
       console.warn(
         "Could not save to server, using localStorage fallback:",
         err,
       );
-      writeLocalLineup(user, weekId, slots);
-      setStatus({
+      saveStatus = {
         type: "warning",
-        text: "Server unavailable — lineup saved to this browser only.",
-      });
+        text: `Not saved to the database: ${err.message}`,
+      };
+    }
+    try {
+      writeLocalLineup(user, weekId, slots);
+      if (saveStatus.type === "warning") {
+        saveStatus.text += " Lineup saved to this browser only.";
+      }
+    } catch (err) {
+      console.error("Could not save browser lineup backup:", err);
+      saveStatus = {
+        type: saveStatus.type === "success" ? "warning" : "error",
+        text: `${saveStatus.text} Browser backup also failed.`,
+      };
     } finally {
+      setStatus(saveStatus);
       setSaving(false);
     }
   };
 
   const handleClearAll = () => {
-    if (readOnly) return;
+    if (readOnly || saving || lineupLoading) return;
     setLineup(emptyLineup());
     setStatus(null);
   };
@@ -515,6 +543,7 @@ function App() {
               type="text"
               placeholder="e.g. kevin"
               value={userId}
+              disabled={saving}
               onChange={(e) => setUserId(e.target.value)}
               autoComplete="off"
             />
@@ -524,6 +553,7 @@ function App() {
             <select
               id="week-id"
               value={weekId}
+              disabled={saving}
               onChange={(e) => {
                 weekTouchedRef.current = true;
                 setWeekId(e.target.value);
@@ -562,6 +592,10 @@ function App() {
         )}
       </div>
 
+      {lineupLoading && (
+        <div className="status status-warning">Loading the selected week's lineup…</div>
+      )}
+
       <div className="panel">
         <div className="panel-title">
           Starting Lineup — 1 QB · 2 RB · 3 WR · 1 TE · 1 K · 1 DEF
@@ -585,7 +619,7 @@ function App() {
                   slot={slot}
                   player={lineup[slot.id]}
                   options={optionsFor(slot)}
-                  disabled={readOnly}
+                  disabled={readOnly || saving || lineupLoading}
                   onSelect={(p) =>
                     setLineup((prev) => ({ ...prev, [slot.id]: p }))
                   }
@@ -618,7 +652,7 @@ function App() {
             <button
               type="button"
               className="btn btn-ghost"
-              disabled={readOnly}
+              disabled={readOnly || saving || lineupLoading}
               onClick={handleClearAll}
             >
               Clear All
@@ -631,11 +665,13 @@ function App() {
               title={
                 readOnly
                   ? "This week's lineup is read-only"
-                  : !userId.trim()
-                    ? "Enter a manager name first"
-                    : !complete
-                      ? "Fill all 9 lineup slots to save"
-                      : "Save lineup"
+                  : lineupLoading
+                    ? "Wait for the selected week's lineup to load"
+                    : !userId.trim()
+                      ? "Enter a manager name first"
+                      : !complete
+                        ? "Fill all 9 lineup slots to save"
+                        : "Save lineup"
               }
             >
               {saving ? "Saving…" : "Save Lineup"}
@@ -649,8 +685,8 @@ function App() {
 
       <footer>
         <p>
-          LDFFW Points System | Lineups are stored as JSON in
-          data/users_lineup.json
+          LDFFW Points System | Production lineups are saved to SQL Server.
+          Browser-only backups are not database saves.
         </p>
       </footer>
     </div>

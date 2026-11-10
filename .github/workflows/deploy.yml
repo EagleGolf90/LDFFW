@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       # .env is gitignored, so build it from repo secrets for api/lineup.php
-      # (MySQL credentials for the users_lineup table).
+      # (SQL Server credentials for dbo.users_lineup; default port 1433).
       - name: Write production .env
         run: |
           cat > .env <<'EOF'
@@ -38,8 +38,7 @@ jobs:
           local-dir: ./
           server-dir: kdga/ldffw/
           # Keep the defaults, plus never upload/delete the live lineup data
-          # on the production server — it seeds the one-time users_lineup
-          # table migration and is the fallback when MySQL is unreachable.
+          # on the production server — keep historical JSON data intact.
           exclude: |
             **/.git*
             **/.git*/**
