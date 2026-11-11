@@ -36,6 +36,32 @@ is not a database save. Local `npm start` still uses `data/users_lineup.json`.
 Run the storage regression checks with `php scripts/test_lineup_store.php`
 (uses an isolated in-memory SQLite database, not production).
 
+#### Troubleshooting production saves
+
+If the page reports "SQL Server is unavailable" and "Lineup saved to this
+browser only", the database save failed; the browser copy is not shared
+with other devices.
+
+1. In GitHub **Settings > Secrets and variables > Actions**, add repository
+   secrets `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` for the
+   production SQL Server. Optionally add `DB_PORT` (defaults to `1433`).
+   FTP secrets only configure file uploads, not the database connection.
+   The deploy workflow now stops before uploading if required database
+   secrets are missing or the port is invalid.
+2. Deploy again so the production root `.env` receives those settings.
+   Adding secrets alone does not update an already deployed site.
+3. Ask the hosting provider to confirm that the **web PHP runtime** has
+   `pdo_sqlsrv` and the Microsoft ODBC driver installed and can reach the
+   SQL Server host/port. A local connection from your computer does not
+   verify connectivity from the PHP host.
+4. Check the hosting PHP error log for entries beginning with `lineup.php:`.
+   These distinguish a missing driver or setting from login, network, or
+   TLS certificate failures. Do not publish credentials or a public
+   `phpinfo()` page, and keep certificate validation enabled.
+5. After fixing the connection, open the same browser and week and save
+   the lineup again. Confirm the page reports a SQL Server save, then
+   verify that week loads from a second browser.
+
 ### [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
 **What:** Complete summary of what was implemented  
 **Who:** Everyone - especially project managers and stakeholders  

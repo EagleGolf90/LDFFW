@@ -18,14 +18,35 @@ jobs:
       # .env is gitignored, so build it from repo secrets for api/lineup.php
       # (SQL Server credentials for dbo.users_lineup; default port 1433).
       - name: Write production .env
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
         run: |
-          cat > .env <<'EOF'
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          EOF
+          missing=0
+          for key in DB_HOST DB_USER DB_PASSWORD DB_NAME; do
+            if [[ -z "${!key}" ]]; then
+              echo "::error::Missing required repository secret: $key"
+              missing=1
+            fi
+          done
+          if [[ "$missing" == 1 ]]; then
+            exit 1
+          fi
+          DB_PORT="${DB_PORT:-1433}"
+          if [[ ! "$DB_PORT" =~ ^[0-9]{1,5}$ ]] || (( 10#$DB_PORT < 1 || 10#$DB_PORT > 65535 )); then
+            echo "::error::DB_PORT must be a SQL Server port from 1 to 65535."
+            exit 1
+          fi
+          umask 077
+          printf '%s\n' \
+            "DB_HOST=$DB_HOST" \
+            "DB_USER=$DB_USER" \
+            "DB_PASSWORD=$DB_PASSWORD" \
+            "DB_NAME=$DB_NAME" \
+            "DB_PORT=$DB_PORT" > .env
 
       - name: Deploy to FullTimberStack
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
